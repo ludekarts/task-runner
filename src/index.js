@@ -11,11 +11,11 @@ async function TaskRunner(tasks) {
 
   try {
     if (onlyTask) {
-      runSingleTest(onlyTask, tasks.only);
+      await runSingleTest(onlyTask, tasks.only).catch(errorMesage);
     } else {
       for (let i = 0, l = tasksNames.length; i < l; i++) {
         const taskName = tasksNames[i];
-        await runSingleTest(taskName, tasks);
+        await runSingleTest(taskName, tasks).catch(errorMesage);
       }
     }
   } catch (error) {
@@ -27,7 +27,7 @@ async function runSingleTest(taskName, tasks) {
   if (taskName === "only") return;
   inlineMessage(`\nRunnig task `);
   infoMesage(taskName);
-  await tasks[taskName]();
+  return await tasks[taskName]();
 }
 
 async function step(name, executeFunction, config = {}) {
@@ -50,12 +50,13 @@ async function step(name, executeFunction, config = {}) {
   successMesage(okMessage);
 }
 
-async function execCommand(command) {
+async function execCommand(command, showWarnings = false) {
   let result;
   try {
     const { stdout, stderr } = await exec(command);
     result = stdout;
-    // if (stderr) throw stderr;
+    showWarnings && warningMesage(stderr);
+
   } catch (error) {
     throw error;
   }
@@ -73,8 +74,8 @@ async function prompterMessage(question, defaultValue) {
     });
 
     const promptedQuestion = !defaultValue
-      ? question
-      : `${question} (${defaultValue})`
+      ? `${question} `
+      : `${question} (${defaultValue}) `
 
     rl.question(promptedQuestion, function (answer) {
       rl.close();
@@ -98,6 +99,10 @@ function errorMesage(message) {
 
 function successMesage(message) {
   console.log("\x1b[32m%s\x1b[0m", message);
+}
+
+function warningMesage(message) {
+  console.log("\x1b[33m%s\x1b[0m", message);
 }
 
 
