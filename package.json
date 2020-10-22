@@ -1,0 +1,19 @@
+{
+  "name": "@ludekarts/task-runner",
+  "version": "0.0.1",
+  "description": "Tool for executing series of system tasks",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ludekarts/task-runner.git"
+  },
+  "author": "Wojciech Ludwin @ludekarts, ludekarts@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ludekarts/task-runner/issues"
+  },
+  "homepage": "https://github.com/ludekarts/task-runner#readme"
+}
