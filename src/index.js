@@ -56,7 +56,6 @@ async function execCommand(command, showWarnings = false) {
     const { stdout, stderr } = await exec(command);
     result = stdout;
     showWarnings && warningMesage(stderr);
-
   } catch (error) {
     throw error;
   }
@@ -79,7 +78,7 @@ async function prompterMessage(question, defaultValue) {
 
     rl.question(promptedQuestion, function (answer) {
       rl.close();
-      resolve(!answer || !answer.length ? defaultValue : answer);
+      resolve(answer ? answer : (defaultValue || ""));
     });
 
   });
@@ -133,6 +132,7 @@ const message = {
   error: errorMesage,
   inline: inlineMessage,
   success: successMesage,
+  warning: warningMesage,
   prompter: prompterMessage,
 };
 
