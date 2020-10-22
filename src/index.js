@@ -65,16 +65,20 @@ async function execCommand(command) {
 
 // ---- Messages ----------------
 
-async function prompterMessage(question) {
+async function prompterMessage(question, defaultValue) {
   return new Promise((resolve) => {
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout
     });
 
-    rl.question(question, function (answer) {
+    const promptedQuestion = !defaultValue
+      ? question
+      : `${question} (${defaultValue})`
+
+    rl.question(promptedQuestion, function (answer) {
       rl.close();
-      resolve(answer);
+      resolve(!answer || !answer.length ? defaultValue : answer);
     });
 
   });
