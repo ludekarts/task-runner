@@ -25,7 +25,7 @@ tasks.chcekIfPHPExist async function () {
   await step(" - Check for PHP", () => execCommand("php -v"));  
 };
 
-TaskRunner(tasks);
+TaskRunner(tasks, listOfSelectedTasks);
 ```
 
 4. Execute tasks script thorugh system terminal

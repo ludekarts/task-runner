@@ -5,17 +5,23 @@ const readline = require("readline");
 const exec = util.promisify(require("child_process").exec);
 
 
-async function TaskRunner(tasks) {
+async function TaskRunner(taskList, selectiveList) {
+  const { tools, ...tasks } = taskList;
   const tasksNames = Object.keys(tasks);
-  const onlyTask = tasks.only && Object.keys(tasks.only)[0];
 
   try {
-    if (onlyTask) {
-      await runSingleTest(onlyTask, tasks.only).catch(errorMesage);
+    if (Array.isArray(selectiveList) && selectiveList.length) {
+      // Allow for selecting tasks to run.
+      const allTasks = { ...tasks, ...tools };
+      for (let i = 0, l = selectiveList.length; i < l; i++) {
+        const taskName = selectiveList[i];
+        await runSingleTest(taskName, allTasks[taskName]).catch(errorMesage);
+      }
     } else {
+      // Run all tasks.
       for (let i = 0, l = tasksNames.length; i < l; i++) {
         const taskName = tasksNames[i];
-        await runSingleTest(taskName, tasks).catch(errorMesage);
+        await runSingleTest(taskName, tasks[taskName]).catch(errorMesage);
       }
     }
   } catch (error) {
@@ -23,14 +29,15 @@ async function TaskRunner(tasks) {
   }
 }
 
-async function runSingleTest(taskName, tasks) {
-  if (taskName === "only") return;
+async function runSingleTest(taskName, task) {
   inlineMessage(`\nRunnig task `);
   infoMesage(taskName);
-  return await tasks[taskName]();
+  if (!task)
+    throw new Error(`Task "${taskName}" does not exist`);
+  return await task();
 }
 
-async function step(name, executeFunction, config = {}) {
+async function step(description, stepBodyFunction, config = {}) {
   const okMessage = config.success || "✔";
   // Setting "error" flag to TRUE causes that exception rised in the task will be reported as a regular stack trace.
   // If passed string the string value will be presented. In any other case string "✘" will display.
@@ -40,10 +47,10 @@ async function step(name, executeFunction, config = {}) {
       ? config.error
       : "✘";
 
-  inlineMessage(`${name} - `);
+  inlineMessage(` - ${description} - `);
 
   try {
-    await executeFunction();
+    await stepBodyFunction();
   } catch (error) {
     throw errMessage || error;
   }
