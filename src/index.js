@@ -114,10 +114,10 @@ function createReadFile(isJson = false) {
 }
 
 function createSaveFile(isJson = false) {
-  return function saveFile(url, data) {
+  return function saveFile(url, data, override = true) {
     const destination = path.join(process.cwd() + url);
     const content = isJson ? JSON.stringify(data) : data;
-    fs.writeFileSync(destination, content.trim());
+    fs.writeFileSync(destination, content.trim(), { flag: override ? "w" : "wx" });
   }
 }
 

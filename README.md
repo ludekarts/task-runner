@@ -6,44 +6,44 @@ Small utility for executing series of tasks with console reporting.
 
 1. Install with npm:
 
-```
-npm install @ludekarts/task-runner --save-dev
-```
+    ```
+    npm install @ludekarts/task-runner --save-dev
+    ```
 
 2. Create *task.js* file and import *task-runner* e.g.:
 
-```
-echo 'const { TaskRunner, runCommand } = require("@ludekarts/task-runner");' > tasks.js
-```
+    ```
+    echo 'const { TaskRunner, runCommand } = require("@ludekarts/task-runner");' > tasks.js
+    ```
 
 3. Add your first tasks collection and add first task
 
-```
-const tasksCollection = {};
+    ```
+    const tasksCollection = {};
 
-tasks.checkNpmVersion async function () {
-  const npmVersion = await runCommand("npm -o", true);
-  if (!/^\d+\.\d+\.\d+/.test(npmVersion)) {
-    throw new Error("No NPM! 😱");
-  }
-};
+    tasks.checkNpmVersion async function () {
+      const npmVersion = await runCommand("npm -o", true);
+      if (!/^\d+\.\d+\.\d+/.test(npmVersion)) {
+        throw new Error("No NPM! 😱");
+      }
+    };
 
-TaskRunner(tasksCollection, { showErrorReport: true });
-```
+    TaskRunner(tasksCollection, { showErrorReport: true });
+    ```
 
 4. Execute *tasks.js* script thorugh system terminal
 
-```
-> node tasks.js
-```
+    ```
+    > node tasks.js
+    ```
 
 5. Expeceted result
 
-```
-Running task: npmVersion
-npmVersion: completed ✔
-No errors occured!
-```
+    ```
+    Running task: npmVersion
+    npmVersion: completed ✔
+    No errors occured!
+    ```
 
 ## API Reference
 
