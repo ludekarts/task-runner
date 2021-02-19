@@ -1,10 +1,10 @@
 {
   "name": "@ludekarts/task-runner",
-  "version": "0.0.6",
-  "description": "Tool for executing series of system tasks",
+  "version": "0.1.0",
+  "description": "Small utility executing series of system tasks",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -15,5 +15,13 @@
   "bugs": {
     "url": "https://github.com/ludekarts/task-runner/issues"
   },
-  "homepage": "https://github.com/ludekarts/task-runner#readme"
+  "homepage": "https://github.com/ludekarts/task-runner#readme",
+  "dependencies": {
+    "cross-spawn": "^7.0.3"
+  },
+  "devDependencies": {
+    "chai": "^4.3.0",
+    "chai-as-promised": "^7.1.1",
+    "mocha": "^8.3.0"
+  }
 }

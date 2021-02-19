@@ -1,5 +1,5 @@
 # Task runner
-Tool for executing series of system tasks with console reporting
+Small utility for executing series of tasks with console reporting.
 
 
 ## Usage
@@ -7,28 +7,31 @@ Tool for executing series of system tasks with console reporting
 1. Install with npm:
 
 ```
-npm install @ludekarts/tasks-runner --save-dev
+npm install @ludekarts/task-runner --save-dev
 ```
 
 2. Create *task.js* file and import *task-runner* e.g.:
 
 ```
-echo 'const { TaskRunner, step, execCommand } = require("@ludekarts/task-runner");' > tasks.js
+echo 'const { TaskRunner, runCommand } = require("@ludekarts/task-runner");' > tasks.js
 ```
 
-3. Add your first task
+3. Add your first tasks collection and add first task
 
 ```
-const tasks = {};
+const tasksCollection = {};
 
-tasks.chcekIfPHPExist async function () {
-  await step(" - Check for PHP", () => execCommand("php -v"));  
+tasks.checkNpmVersion async function () {
+  const npmVersion = await runCommand("npm -o", true);
+  if (!/^\d+\.\d+\.\d+/.test(npmVersion)) {
+    throw new Error("No NPM! 😱");
+  }
 };
 
-TaskRunner(tasks, listOfSelectedTasks);
+TaskRunner(tasksCollection, { showErrorReport: true });
 ```
 
-4. Execute tasks script thorugh system terminal
+4. Execute *tasks.js* script thorugh system terminal
 
 ```
 > node tasks.js
@@ -37,24 +40,34 @@ TaskRunner(tasks, listOfSelectedTasks);
 5. Expeceted result
 
 ```
-Runnig task chcekIfPHPExist
- - Check for PHP - ✔
+Running task: npmVersion
+npmVersion: completed ✔
+No errors occured!
 ```
 
 ## API Reference
 
-- TaskRunner(tasks: Object) - ...
-- step(message: String, executeFn: Function, config: Object) -> Promise(stdout: String) - ... 
-- execCommand(systemCommand: String, showWarnings: Boolean) -> Promise(stdout: String) - ...
-- message: 
-    - info(message: String) - ...
-    - error(message: String) - ...
-    - inline(message: String) - ...
-    - success(message: String) - ...
-    - warning(message: String) - ...
-    - prompter(message: String, defaultValue: String) -> userInput: String - ...
-- file:
-    - save (path: String, content: String) - ...
-    - read (path: String) -> content: String - ...
-    - saveJson(path: String, json: Object) - ...
-    - readJson(path: String) -> json: Object - ...
+- **TaskRunner(** tasksCollection: Object, { selectiveList: Array (undefined), showErrorReport: Boolean(false)} **)** - Run all tasks from given *tasksCollection*. Each task is called asynchronous. If *showErrorReport* flag set to TRUE at the end user will be presented with full Error Report. By passing to *selectiveList* array of tasks to run user can specify which task should run. Best way to utilize this feature is to connect it to *precess.args* e.g.:
+    ```
+    const selectiveList = process.argv.slice(2);
+    TaskRunner(tasks, { selectiveList, showErrorReport: true });
+    ``` 
+    Thank to this user can call script with names of tasks to run e.g.:
+
+    ```
+    > node tasks.js taskNameOne taskNameTwo
+    ```
+
+- **runCommand(** systemCommand: String, resolveWithData: Boolean(false) **)** -> Promise() - Allows user to run system commands. Returns promise that resolves by default with *exit code* or stringified buffer data if *resolveWithData* flag is set. If method resolves with data the output of the method will no be present in the console instead it will be returned as the promise result.
+
+- **message** (sync methods): 
+    - **info(** message: String **)** - Output blue text to the console.
+    - **error(** message: String **)** - Output red text to the console.
+    - **success(** message: String **)** - Output green text to the console.
+    - **warning(** message: String **)** - Output orange text to the console.
+    - **input(** message: String, defaultValue: String **)** -> take userInput: String -> Promise() - Display Message and take user input.
+- **file** (sync methods):
+    - **save (** path: String, content: String **)** - Save file under given path.
+    - **read (** path: String **)** -> content: String - Read file from given path.
+    - **saveJson(** path: String, json: Object **)** - Save JSON file under given path.
+    - **readJson(** path: String **)** -> json: Object - Read JSON file from given path.

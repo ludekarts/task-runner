@@ -1,78 +1,82 @@
 const fs = require("fs");
 const path = require("path");
-const util = require("util");
 const readline = require("readline");
-const exec = util.promisify(require("child_process").exec);
+const spawn = require("cross-spawn");
 
-
-async function TaskRunner(taskList, selectiveList) {
-  const { tools, ...tasks } = taskList;
+async function TaskRunner(tasks, config = {}) {
+  const { selectiveList, showErrorReport = false } = config;
   const tasksNames = Object.keys(tasks);
+  const results = shouldRunAllTasks(selectiveList)
+    ? await executeTasks(tasksNames, tasks)
+    : await executeTasks(selectiveList, tasks);
 
+  if (showErrorReport) {
+    !results.length
+      ? successMesage("No errors occured!")
+      : (errorMesage("Error Report:"), console.log(results));
+  }
+
+  return results;
+};
+
+function shouldRunAllTasks(selectiveList) {
+  return !selectiveList || !Array.isArray(selectiveList) || !selectiveList.length;
+}
+
+async function executeTasks(tasksNames, tasks) {
+  const results = [];
+  for (let i = 0, l = tasksNames.length; i < l; i++) {
+    const taskName = tasksNames[i];
+    const taskFunction = tasks[taskName];
+    const result = await task(taskName, taskFunction);
+    result && result.error && results.push(result);
+  }
+  return results;
+}
+
+async function task(title, taskFunction) {
+  infoMesage(`Running task: ${title}`);
   try {
-    if (Array.isArray(selectiveList) && selectiveList.length) {
-      // Allow for selecting tasks to run.
-      const allTasks = { ...tasks, ...tools };
-      for (let i = 0, l = selectiveList.length; i < l; i++) {
-        const taskName = selectiveList[i];
-        await runSingleTest(taskName, allTasks[taskName]).catch(errorMesage);
-      }
-    } else {
-      // Run all tasks.
-      for (let i = 0, l = tasksNames.length; i < l; i++) {
-        const taskName = tasksNames[i];
-        await runSingleTest(taskName, tasks[taskName]).catch(errorMesage);
-      }
-    }
+    const result = await taskFunction();
+    successMesage(`${title}: completed ✔`);
+    return result;
   } catch (error) {
-    errorMesage(error);
+    errorMesage(`${title}: failed ✖`);
+    return { title, error };
   }
 }
 
-async function runSingleTest(taskName, task) {
-  inlineMessage(`\nRunnig task `);
-  infoMesage(taskName);
-  if (!task)
-    throw new Error(`Task "${taskName}" does not exist`);
-  return await task();
+function runCommand(commandString, resolveWithData = false) {
+  const [command, ...args] = commandString.split(" ");
+  return new Promise((resolve, reject) => {
+    const childProcess = spawn(command, [...args], { stdio: resolveWithData ? "pipe" : "inherit" });
+    let buffer = "";
+    resolveWithData &&
+      childProcess.stdout.on("data", data => buffer += data.toString());
+    childProcess.on("close", code => resolve(resolveWithData ? buffer.trim() : code));
+    childProcess.on("error", error => reject(error));
+  });
 }
-
-async function step(description, stepBodyFunction, config = {}) {
-  const okMessage = config.success || "✔";
-  // Setting "error" flag to TRUE causes that exception rised in the task will be reported as a regular stack trace.
-  // If passed string the string value will be presented. In any other case string "✘" will display.
-  const errMessage = config.error === true
-    ? null
-    : typeof config.error === "string"
-      ? config.error
-      : "✘";
-
-  inlineMessage(` - ${description} - `);
-
-  try {
-    await stepBodyFunction();
-  } catch (error) {
-    throw errMessage || error;
-  }
-  successMesage(okMessage);
-}
-
-async function execCommand(command, showWarnings = false) {
-  let result;
-  try {
-    const { stdout, stderr } = await exec(command);
-    result = stdout;
-    showWarnings && warningMesage(stderr);
-  } catch (error) {
-    throw error;
-  }
-  return result;
-}
-
 
 // ---- Messages ----------------
 
-async function prompterMessage(question, defaultValue) {
+function infoMesage(message) {
+  console.log("\x1b[36m%s\x1b[0m", message);
+}
+
+function errorMesage(message) {
+  console.log("\x1b[31m%s\x1b[0m", message);
+}
+
+function successMesage(message) {
+  console.log("\x1b[32m%s\x1b[0m", message);
+}
+
+function warningMesage(message) {
+  console.log("\x1b[33m%s\x1b[0m", message);
+}
+
+async function inputMessae(question, defaultValue) {
   return new Promise((resolve) => {
     const rl = readline.createInterface({
       input: process.stdin,
@@ -91,26 +95,13 @@ async function prompterMessage(question, defaultValue) {
   });
 }
 
-function inlineMessage(message) {
-  process.stdout.write(message);
-}
-
-function infoMesage(message) {
-  console.log("\x1b[36m%s\x1b[0m", message);
-}
-
-function errorMesage(message) {
-  console.log("\x1b[31m%s\x1b[0m", message);
-}
-
-function successMesage(message) {
-  console.log("\x1b[32m%s\x1b[0m", message);
-}
-
-function warningMesage(message) {
-  console.log("\x1b[33m%s\x1b[0m", message);
-}
-
+const message = {
+  info: infoMesage,
+  error: errorMesage,
+  input: inputMessae,
+  success: successMesage,
+  warning: warningMesage,
+};
 
 // ---- Read/Write Files ----------------
 
@@ -130,19 +121,6 @@ function createSaveFile(isJson = false) {
   }
 }
 
-
-
-// ---- API ----------------
-
-const message = {
-  info: infoMesage,
-  error: errorMesage,
-  inline: inlineMessage,
-  success: successMesage,
-  warning: warningMesage,
-  prompter: prompterMessage,
-};
-
 const file = {
   save: createSaveFile(),
   read: createReadFile(),
@@ -150,6 +128,12 @@ const file = {
   saveJson: createSaveFile(true),
 };
 
+
+// ---- API ----------------
+
 module.exports = {
-  TaskRunner, step, execCommand, message, file
+  TaskRunner,
+  runCommand,
+  message,
+  file,
 };
