@@ -10,19 +10,19 @@ Small utility for executing series of tasks with console reporting.
     npm install @ludekarts/task-runner --save-dev
     ```
 
-2. Create *task.js* file and import *task-runner* e.g.:
+1. Create `task.js` file and import **task-runner** e.g.:
 
     ```
     echo 'const { TaskRunner, runCommand } = require("@ludekarts/task-runner");' > tasks.js
     ```
 
-3. Add your first tasks collection and add first task
+1. Add your first tasks collection and add first task
 
     ```
     const tasksCollection = {};
 
-    tasks.checkNpmVersion async function () {
-      const npmVersion = await runCommand("npm -o", true);
+    tasksCollection.checkNpmVersion = async function () {
+      const npmVersion = await runCommand("npm -v", true);
       if (!/^\d+\.\d+\.\d+/.test(npmVersion)) {
         throw new Error("No NPM! 😱");
       }
@@ -31,18 +31,82 @@ Small utility for executing series of tasks with console reporting.
     TaskRunner(tasksCollection, { showErrorReport: true });
     ```
 
-4. Execute *tasks.js* script thorugh system terminal
+1. Execute `tasks.js` script thorugh system terminal
 
     ```
     > node tasks.js
     ```
 
-5. Expeceted result
+1. Expeceted result
 
     ```
     Running task: npmVersion
     npmVersion: completed ✔
     No errors occured!
+    ```
+
+### How to run only some tasks?
+
+1. Create new `toolbox.js` file:
+
+1. Add following code to the file:
+    ```
+    const { TaskRunner, runCommand } = require("@ludekarts/task-runner");
+
+    const selectiveList = process.argv.slice(2);
+
+    const tasks = {
+      async taskNameOne() {
+        await runCommand("echo runing:taskNameOne");
+      },
+
+      async taskNameTwo() {
+        await runCommand("echo runing:taskNameTwo");
+      },
+    }
+
+    TaskRunner(tasks, { selectiveList, showErrorReport: true });
+    ```
+1. Run only tasks you want like this:
+    ```
+    > node toolbox.js taskNameTwo
+    ```
+
+
+### How to combine NPM scripts and taskRunner?
+
+1. Create new `builder.js` file:
+
+1. Add following code to the file:
+    ```
+    const { runCommand, message } = require("@ludekarts/task-runner");
+
+    (async function builder(task, platform) {
+      switch (task) {
+
+        case "development":
+          await runCommand(`cross-env NODE_PLATFORM=${platform} webpack serve --mode development`);
+          break;
+
+        default:
+          message.error(`Unknown task: ${task}`);
+          break;
+
+      }
+    }(...process.argv.slice(2)));
+    ```
+
+1. Add new script to your *package.json* file e.g:
+    ```
+    "scripts": {
+      "builder": "node ./builder.js"
+    },
+    ```
+
+1. Run npm script like this:
+
+    ```
+    npm run builder -- development desktop
     ```
 
 ## API Reference
