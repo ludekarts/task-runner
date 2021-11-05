@@ -11,8 +11,11 @@ function createReadFile(isJson = false) {
 
 function createSaveFile(isJson = false) {
   return function saveFile(url, data, override = true) {
-    const destination = path.join(process.cwd() + url);
+    const normalizeUrl = url.includes(path.sep) ? url : `${path.sep}${url}`;
+    const destination = path.join(process.cwd() + normalizeUrl);
     const content = isJson ? JSON.stringify(data) : data;
+    const directory = destination.slice(0, destination.lastIndexOf(path.sep));
+    fs.mkdirSync(directory, { recursive: true });
     fs.writeFileSync(destination, content.trim(), { flag: override ? "w" : "wx" });
   }
 }

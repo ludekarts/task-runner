@@ -135,3 +135,4 @@ Small utility for executing series of tasks with console reporting.
     - **read (** path: String **)** -> content: String - Read file from given path.
     - **saveJson(** path: String, json: Object **)** - Save JSON file under given path.
     - **readJson(** path: String **)** -> json: Object - Read JSON file from given path.
+    - **crawler(**directory: String, processing: function **)** -> Walk through given directory, and precess each file with processing fn.
