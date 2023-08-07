@@ -22,7 +22,7 @@ Small utility for executing series of tasks with console reporting.
     const tasksCollection = {};
 
     tasksCollection.checkNpmVersion = async function () {
-      const npmVersion = await runCommand("npm -v", true);
+      const npmVersion = await runCommand("npm -v", { resolveWithOutput: true, showOutput: true });
       if (!/^\d+\.\d+\.\d+/.test(npmVersion)) {
         throw new Error("No NPM! 😱");
       }
@@ -111,28 +111,48 @@ Small utility for executing series of tasks with console reporting.
 
 ## API Reference
 
-- **TaskRunner(** tasksCollection: Object, { selectiveList: Array (undefined), showErrorReport: Boolean(false)} **)** - Run all tasks from given *tasksCollection*. Each task is called asynchronous. If *showErrorReport* flag set to TRUE at the end user will be presented with full Error Report. By passing to *selectiveList* array of tasks to run user can specify which task should run. Best way to utilize this feature is to connect it to *precess.args* e.g.:
+- **TaskRunner**
+
+  ```
+  TaskRunner (
+    tasksCollection: Object,
+    {
+      selectiveList: Array (undefined),
+      showErrorReport: Boolean(false)
+    }
+  );
+  ```
+  Runs all tasks from given *tasksCollection*. Each task is called asynchronous. If *showErrorReport* flag set to TRUE at the end user will be presented with full Error Report. By passing to *selectiveList* array of tasks to run user can specify which task should run. Best way to utilize this feature is to connect it to *precess.args* e.g.:
     ```
     const selectiveList = process.argv.slice(2);
     TaskRunner(tasks, { selectiveList, showErrorReport: true });
-    ``` 
-    Thank to this user can call script with names of tasks to run e.g.:
+    ```
+    Thanks to this user can call script with names of tasks to run e.g.:
 
     ```
     > node tasks.js taskNameOne taskNameTwo
     ```
 
-- **runCommand(** systemCommand: String, resolveWithData: Boolean(false) **)** -> Promise() - Allows user to run system commands. Returns promise that resolves by default with *exit code* or stringified buffer data if *resolveWithData* flag is set. If method resolves with data the output of the method will no be present in the console instead it will be returned as the promise result.
+- **runCommand(**
+  ```
+  runCommand(
+    systemCommand: String,
+    resolveWithData: Boolean(false)
+  ): Promise;
+  ```
+  Allows user to run system commands. Returns promise that resolves by default with *exit code* or stringified buffer data if *resolveWithData* flag is set. If method resolves with data the output of the method will no be present in the console instead it will be returned as the promise result.
 
-- **message** (sync methods): 
+- **message** (sync methods):
     - **info(** message: String **)** - Output blue text to the console.
     - **error(** message: String **)** - Output red text to the console.
     - **success(** message: String **)** - Output green text to the console.
     - **warning(** message: String **)** - Output orange text to the console.
     - **input(** message: String, defaultValue: String **)** -> take userInput: String -> Promise() - Display Message and take user input.
 - **file** (sync methods):
-    - **save (** path: String, content: String **)** - Save file under given path.
-    - **read (** path: String **)** -> content: String - Read file from given path.
-    - **saveJson(** path: String, json: Object **)** - Save JSON file under given path.
-    - **readJson(** path: String **)** -> json: Object - Read JSON file from given path.
-    - **crawler(**directory: String, processing: function **)** -> Walk through given directory, and precess each file with processing fn.
+    - **save (** path: String, content: String, { override: Boolean(true), isAbsolute: Boolean(false) } **)** - Save file under given path.
+    - **read (** path: String, isAbsolute: Boolean(false) **)** -> content: String - Read file from given path.
+    - **saveJson(** path: String, json: Object, { override: Boolean(true), isAbsolute: Boolean(false) } **)** - Save JSON file under given path.
+    - **readJson(** path: String, isAbsolute: Boolean(false) **)** -> json: Object - Read JSON file from given path.
+    - **crawler(** directory: String, processing: function **)** -> Walk through given directory, and process each path with processing fn.
+
+    > ⚠️ NOTE: Use `isAbsolute` flag to mark path in file's methods as absoute in other case it will ge relative to the executed file.

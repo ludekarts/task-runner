@@ -44,15 +44,34 @@ async function task(title, taskFunction) {
   }
 }
 
-function runCommand(commandString, resolveWithData = false) {
-  const [command, ...args] = commandString.split(" ");
+function runCommand(input, config = {}) {
+  const { resolveWithOutput = false, showOutput = false } = config;
+  const [command, ...args] = input
+    .replace(/["'](.+?)['"]/g, (_, c) => c.replace(/ /g, "$^$"))
+    .split(" ")
+    .map(p => p.replace(/\$\^\$/g, " "));
+
   return new Promise((resolve, reject) => {
-    const childProcess = spawn(command, [...args], { stdio: resolveWithData ? "pipe" : "inherit" });
     let buffer = "";
-    resolveWithData &&
-      childProcess.stdout.on("data", data => buffer += data.toString());
-    childProcess.on("close", code => resolve(resolveWithData ? buffer.trim() : code));
-    childProcess.on("error", error => reject(error));
+    const childProcess = spawn(command, [...args], { stdio: "pipe" });
+
+    if (resolveWithOutput || showOutput) {
+      childProcess.stdout.on("data", data => {
+        const dataString = data.toString();
+
+        if (showOutput) {
+          console.log(dataString);
+        }
+
+        if (resolveWithOutput) {
+          buffer += dataString;
+        }
+
+      });
+    }
+
+    childProcess.on("close", code => resolve(resolveWithOutput ? buffer.trim() : code));
+    childProcess.on("error", reject);
   });
 }
 

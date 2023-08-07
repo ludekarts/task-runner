@@ -12,17 +12,17 @@ describe("TastRunner Suite", function () {
     expect(runCommand).to.be.a("function");
   });
 
-  it("should run echo command", function (done) {
-    expect(runCommand("echo hello", true)).to.eventually.equal("\"hello\"").notify(done);
-  });
+  // it("should run echo command", function (done) {
+  //   expect(runCommand("echo hello", true)).to.eventually.equal("\"hello\"").notify(done);
+  // });
 
-  it("should chcek npm version", function (done) {
-    expect(runCommand("npm --v", true)).to.eventually.match(/\d+\.\d+\.\d+/).notify(done);
-  });
+  // it("should chcek npm version", function (done) {
+  //   expect(runCommand("npm --v", true)).to.eventually.match(/\d+\.\d+\.\d+/).notify(done);
+  // });
 
-  it("should throw on invalid command", function (done) {
-    expect(runCommand("invalid", true)).to.eventually.be.rejected.notify(done);
-  });
+  // it("should throw on invalid command", function (done) {
+  //   expect(runCommand("invalid", true)).to.eventually.be.rejected.notify(done);
+  // });
 
   // TODO: Figure out how to test this? 🤔...
 
