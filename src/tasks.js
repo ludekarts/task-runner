@@ -45,7 +45,7 @@ async function task(title, taskFunction) {
 }
 
 function runCommand(input, config = {}) {
-  const { resolveWithOutput = false, showOutput = false } = config;
+  const { resolveWithOutput = false, showOutput = false, stdio = "pipe" } = config;
   const [command, ...args] = input
     .replace(/["'](.+?)['"]/g, (_, c) => c.replace(/ /g, "$^$"))
     .split(" ")
@@ -53,22 +53,20 @@ function runCommand(input, config = {}) {
 
   return new Promise((resolve, reject) => {
     let buffer = "";
-    const childProcess = spawn(command, [...args], { stdio: "pipe" });
+    const childProcess = spawn(command, [...args], { stdio });
 
-    if (resolveWithOutput || showOutput) {
-      childProcess.stdout.on("data", data => {
-        const dataString = data.toString();
+    childProcess.stdout?.on("data", data => {
+      const dataString = data.toString();
 
-        if (showOutput) {
-          console.log(dataString);
-        }
+      if (showOutput) {
+        console.log(dataString);
+      }
 
-        if (resolveWithOutput) {
-          buffer += dataString;
-        }
+      if (resolveWithOutput) {
+        buffer += dataString;
+      }
 
-      });
-    }
+    });
 
     childProcess.on("close", code => resolve(resolveWithOutput ? buffer.trim() : code));
     childProcess.on("error", reject);
