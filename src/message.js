@@ -1,22 +1,22 @@
 const readline = require("readline");
 
-function infoMesage(message) {
+function infoMessage(message) {
   console.log("\x1b[36m%s\x1b[0m", message);
 }
 
-function errorMesage(message) {
+function errorMessage(message) {
   console.log("\x1b[31m%s\x1b[0m", message);
 }
 
-function successMesage(message) {
+function successMessage(message) {
   console.log("\x1b[32m%s\x1b[0m", message);
 }
 
-function warningMesage(message) {
+function warningMessage(message) {
   console.log("\x1b[33m%s\x1b[0m", message);
 }
 
-async function inputMessae(question, defaultValue) {
+async function inputMessage(question, defaultValue) {
   return new Promise((resolve) => {
     const rl = readline.createInterface({
       input: process.stdin,
@@ -36,9 +36,9 @@ async function inputMessae(question, defaultValue) {
 }
 
 module.exports.message = {
-  info: infoMesage,
-  error: errorMesage,
-  input: inputMessae,
-  success: successMesage,
-  warning: warningMesage,
+  info: infoMessage,
+  error: errorMessage,
+  input: inputMessage,
+  success: successMessage,
+  warning: warningMessage,
 };

@@ -18,7 +18,7 @@ function createSaveFile(isJson = false) {
     const content = isJson ? JSON.stringify(data) : data;
     const directory = destination.slice(0, destination.lastIndexOf(path.sep));
     fs.mkdirSync(directory, { recursive: true });
-    fs.writeFileSync(destination, content.trim(), { flag: override ? "w" : "wx" });
+    fs.writeFileSync(destination, content.trim(), { flag: override ? "w" : "a" });
   }
 }
 
