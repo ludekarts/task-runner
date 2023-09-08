@@ -1,6 +1,6 @@
 {
   "name": "@ludekarts/task-runner",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Small utility executing series of system tasks",
   "main": "src/index.js",
   "scripts": {
