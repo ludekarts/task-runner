@@ -5,11 +5,11 @@
   const { parseParmas } = utils;
   . . .
 
-  // $ node index.js --a 1 --b
+  // $ node index.js -a 1 -b -d
 
-  const [a, b, c] = parseParmas(process.argv.slice(2), "--a", "--b", "--c");
+  const [a, b, c, d] = parseParmas(process.argv.slice(2), "-a", "-b", "-c", "-d");
 
-  console.log(a, b, c); // 1 true undefined
+  console.log(a, b, c, d); // 1 true undefined true
 
 */
 
@@ -21,7 +21,13 @@ function parseParmas(params, ...flags) {
   return flags.map((flag) => {
     const index = params.indexOf(flag);
     const value = params[index + 1];
-    return index < 0 ? undefined : value || true;
+    return index < 0
+      ? undefined
+      : value
+      ? flags.includes(value)
+        ? true
+        : value
+      : true;
   });
 }
 
