@@ -2,18 +2,18 @@
   USAGE:
 
   const { utils } = require("@ludekarts/task-runner");
-  const { parseParmas } = utils;
+  const { parseParams } = utils;
   . . .
 
   // $ node index.js -a 1 -b -d
 
-  const [a, b, c, d] = parseParmas(process.argv.slice(2), "-a", "-b", "-c", "-d");
+  const [a, b, c, d] = parseParams(process.argv.slice(2), "-a", "-b", "-c", "-d");
 
   console.log(a, b, c, d); // 1 true undefined true
 
 */
 
-function parseParmas(params, ...flags) {
+function parseParams(params, ...flags) {
   if (!Array.isArray(params)) {
     throw new Error("Cannot parse params. Params must be an array");
   }
@@ -32,5 +32,5 @@ function parseParmas(params, ...flags) {
 }
 
 module.exports.utils = {
-  parseParmas,
+  parseParams,
 };
