@@ -1,31 +1,39 @@
 const fs = require("fs");
 const path = require("path");
 
-function createReadFile(isJson = false) {
-  return function readFile(url, isAbsolute = false) {
-    const normalizeUrl = url.includes(path.sep) ? url : `${path.sep}${url}`;
-    const location = isAbsolute
-      ? normalizeUrl
-      : path.join(process.cwd() + normalizeUrl);
-    const content = fs.readFileSync(location, { encoding: "utf8" });
-    return isJson ? JSON.parse(content) : content;
-  };
+function read(filePath, options = {}) {
+  const { encoding = "utf8" } = options;
+  const absolutePath = path.isAbsolute(filePath)
+    ? filePath
+    : path.resolve(filePath);
+  return fs.readFileSync(absolutePath, { encoding });
 }
 
-function createSaveFile(isJson = false) {
-  return function saveFile(url, data, options = {}) {
-    const { override = true, isAbsolute = false } = options;
-    const normalizeUrl = url.includes(path.sep) ? url : `${path.sep}${url}`;
-    const destination = isAbsolute
-      ? normalizeUrl
-      : path.join(process.cwd() + normalizeUrl);
-    const content = isJson ? JSON.stringify(data) : data;
-    const directory = destination.slice(0, destination.lastIndexOf(path.sep));
-    fs.mkdirSync(directory, { recursive: true });
-    fs.writeFileSync(destination, content.trim(), {
-      flag: override ? "w" : "a",
-    });
-  };
+function save(filePath, content, options = {}) {
+  const { override = true } = options;
+
+  // If the path is relative, resolve it against the current working directory
+  const absolutePath = path.isAbsolute(filePath)
+    ? filePath
+    : path.resolve(filePath);
+  const dir = path.dirname(absolutePath);
+
+  if (typeof content !== "string") {
+    throw new Error("Content should be a string");
+  }
+
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(absolutePath, content.trim(), {
+    flag: override ? "w" : "a",
+  });
+}
+
+function saveJson(filePath, content, options) {
+  save(filePath, JSON.stringify(content), options);
+}
+
+function readJson(filePath, options) {
+  return JSON.parse(read(filePath, options));
 }
 
 /*
@@ -80,9 +88,9 @@ function crawler(directory, processing = defaultProcessing) {
 }
 
 module.exports.file = {
-  crawler: crawler,
-  save: createSaveFile(),
-  read: createReadFile(),
-  readJson: createReadFile(true),
-  saveJson: createSaveFile(true),
+  read,
+  save,
+  crawler,
+  readJson,
+  saveJson,
 };
